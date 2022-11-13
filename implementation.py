@@ -41,7 +41,7 @@ if __name__ == "__main__":
             # Handle "nodePort" access
             f'iptables -t nat -A PREROUTING -p tcp -m addrtype --dst-type LOCAL -m tcp --dport 30463 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
             # Handle "loadBalancer" access
-            f'iptables -t nat -A PREROUTING -d {net_pub[241]} -p tcp --dport 8000 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
+            f'iptables -t nat -A PREROUTING -d {net_pub[241]} -p tcp --dport 80 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
             # Masquerade return traffic from services
             f'iptables -t nat -A POSTROUTING -s {net["serv0"].intf().ip} -j MASQUERADE',
             f"ip rule add priority 200 from {net_pub} lookup main suppress_prefixlen 0",
