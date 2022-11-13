@@ -23,13 +23,7 @@ if __name__ == "__main__":
         )
         net["client"].run_many(
             f"ip route add default via {net_client.gateway}",
-            f'ip route add {net_host} via {net["r_vpn"].intfs[0].ip}',
-        )
-        net["r_vpn"].run_many(
-            f'ip route add {net_host} via {net["r_host"].intfs[1].ip}',
-        )
-        net["r_host"].run_many(
-            f'ip route add {net_vpn} via {net["r_vpn"].intfs[1].ip}',
+            f"ip route add {net_host} via {net['r_host'].intfs[1].ip}",
         )
 
         net["r_pub"].run_many(
@@ -44,13 +38,10 @@ if __name__ == "__main__":
 
         net["host0"].run_many(
             f"ip route add default via {net_host.gateway}",
-
             # Handle "nodePort" access
             f'iptables -t nat -A PREROUTING -p tcp -m addrtype --dst-type LOCAL -m tcp --dport 30463 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
-
             # Handle "loadBalancer" access
             f'iptables -t nat -A PREROUTING -d {net_pub[241]} -p tcp --dport 8000 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
-
             # Masquerade return traffic from services
             f'iptables -t nat -A POSTROUTING -s {net["serv0"].intf().ip} -j MASQUERADE',
             f"ip rule add priority 200 from {net_pub} lookup main suppress_prefixlen 0",

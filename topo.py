@@ -12,7 +12,6 @@ net_cluster = Network("10.128.0.0/14")
 net_service = Network("172.30.0.0/16")
 net_pub = Network("10.94.61.0/24")
 net_client = Network("192.168.110.0/24")
-net_transit = Network("192.168.120.0/24")
 
 
 class MyNetwork(Topo):
@@ -22,7 +21,6 @@ class MyNetwork(Topo):
         #
         # These are hosts with multiple interfaces that are responsible for
         # routing traffic between differents networks.
-        r_vpn = self.addHost("r_vpn", ip=net_vpn.gateway_cidr)
         r_host = self.addHost("r_host", ip=net_host.gateway_cidr)
         r_pub = self.addHost("r_pub", ip=net_pub.gateway_cidr)
         r_client = self.addHost("r_client", ip=net_client.gateway_cidr)
@@ -37,14 +35,11 @@ class MyNetwork(Topo):
         s_service = self.addSwitch("s_service", dpid=next(dpid))
         s_internet = self.addSwitch("s_internet", dpid=next(dpid))
         s_vpn = self.addSwitch("s_vpn", dpid=next(dpid))
-        s_transit = self.addSwitch("s_transit", dpid=next(dpid))
 
-        self.addLink(r_vpn, s_vpn)
         self.addLink(r_client, s_client)
         self.addLink(r_host, s_host)
         self.addLink(r_pub, s_pub)
-        self.addLink(r_host, s_transit, params1=dict(ip=net_transit.next_cidr()))
-        self.addLink(r_vpn, s_transit, params1=dict(ip=net_transit.next_cidr()))
+        self.addLink(r_host, s_vpn, params1=dict(ip=net_vpn.next_cidr()))
 
         # "client" is your home device. It access the remote cluster over the
         # public network or over the VPN.
