@@ -1,12 +1,10 @@
+import enum
 import pytest
 import time
 
 import implementation
 from topo import *
-
-RP_FILTER_LOOSE = 2
-RP_FILTER_STRICT = 1
-RP_FILTER_DISABLED = 0
+from host import Host
 
 
 @pytest.fixture
@@ -20,7 +18,6 @@ def net():
             f"{net_pub[241]}:80",
             f"{_net['serv0'].intf().ip}:8000",
         )
-        implementation.configure_rp_filter(_net, "host0")
 
         while True:
             try:
@@ -32,6 +29,7 @@ def net():
                 break
 
         yield _net
+
 
 @pytest.fixture
 def net_with_routing(net):
@@ -47,7 +45,7 @@ def ipof(hostname, devname):
                 return intf.ip
         raise KeyError(devname)
 
-    ipof_net.__name__ = f'{devname}@{hostname}'
+    ipof_net.__name__ = f"{devname}@{hostname}"
     return ipof_net
 
 
@@ -61,7 +59,7 @@ def ipof(hostname, devname):
 )
 def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
     net = net_with_routing
-    implementation.configure_rp_filter(net, "host0", value=RP_FILTER_LOOSE)
+    net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
     if callable(addr):
         addr = addr(net)
 
@@ -87,7 +85,7 @@ def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
 )
 def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
     net = net_with_routing
-    implementation.configure_rp_filter(net, "host0", value=RP_FILTER_STRICT)
+    net["host0"].setRpFilter(Host.RP_FILTER_STRICT)
     if callable(addr):
         addr = addr(net)
 

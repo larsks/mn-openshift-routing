@@ -57,18 +57,6 @@ def configure_basic_routes(net):
     )
 
 
-def configure_rp_filter(net, hostname, value=0):
-    host = net[hostname]
-
-    # Set rp_filter to 0 for all interfaces so that we can control the setting
-    # with net.ipv4.conf.all.rp_filter.
-    for intf in host.intfs.values():
-        host.run(f"sysctl -w net.ipv4.conf.{intf.name}.rp_filter=0")
-
-    # Configure loose rp_filter by default
-    host.run(f"sysctl -w net.ipv4.conf.all.rp_filter={value}")
-
-
 def configure_nat(net, hostname, nodeport, pub_addr, serv_addr):
     host = net[hostname]
 
@@ -122,8 +110,8 @@ if __name__ == "__main__":
     setLogLevel("info")
 
     with run_network() as net:
+        net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
         configure_basic_routes(net)
-        configure_rp_filter(net, "host0", value=2)
         configure_nat(
             net,
             "host0",
