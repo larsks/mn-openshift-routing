@@ -31,12 +31,6 @@
 
 ### Configure the mininet virtual machine
 
-- Enable the `ip_forward` sysctl
-
-  ```
-  sysctl net.ipv4.ip_forward=1 | tr -d ' ' > /etc/sysctl.d/ip_forward.conf
-  ```
-
 - Install some required packages:
 
   ```

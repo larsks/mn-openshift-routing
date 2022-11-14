@@ -1,4 +1,4 @@
-from subprocess import DEVNULL
+import subprocess
 from contextlib import contextmanager
 
 from mininet.log import info, error, setLogLevel
@@ -9,15 +9,20 @@ from mininet.cli import CLI
 from topo import *
 from host import Host
 
-
 @contextmanager
 def run_network():
+    # Ensure that ip_forward is enabled
+    subprocess.check_output("sysctl -w net.ipv4.ip_forward=1", shell=True)
+
     topo = MyNetwork()
     net = Mininet(topo=topo, switch=OVSBridge, host=Host)
     net.start()
     procs = [
         net["serv0"].popen(
-            "python -m http.server", stdout=DEVNULL, stderr=DEVNULL, cwd="./htdocs"
+            "python -m http.server",
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd="./htdocs",
         )
     ]
 
