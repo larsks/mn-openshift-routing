@@ -103,8 +103,8 @@ def configure_fwmark_routing(net, hostname):
 
     host.run_many(
         f"ip rule add priority 200 from {net_pub} lookup main suppress_prefixlen 0",
-        f"ip rule add priority 200 from {net_pub} lookup 200",
-        f"ip rule add priority 210 fwmark 0x2000/0x2000 lookup 200",
+        f"ip rule add priority 210 from {net_pub} lookup 200",
+        f"ip rule add priority 220 fwmark 0x2000/0x2000 lookup 200",
         f"ip route add table 200 default via {net_pub.gateway}",
     )
 
