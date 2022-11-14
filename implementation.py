@@ -56,7 +56,7 @@ def configure_basic_routes(net):
     )
 
 
-def configure_rp_filter(net, hostname, value=2):
+def configure_rp_filter(net, hostname, value=0):
     host = net[hostname]
 
     # Set rp_filter to 0 for all interfaces so that we can control the setting
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     with run_network() as net:
         configure_basic_routes(net)
-        configure_rp_filter(net, "host0")
+        configure_rp_filter(net, "host0", value=2)
         configure_nat(
             net,
             "host0",
