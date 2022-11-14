@@ -36,7 +36,13 @@ if __name__ == "__main__":
             f"iptables -t nat -A POSTROUTING -s {net_client} -j MASQUERADE",
         )
 
+        # Set rp_filter to 0 for all interfaces so that we can control the setting
+        # with net.ipv4.conf.all.rp_filter.
+        for intf in net["host0"].intfs.values():
+            net["host0"].run(f"sysctl -w net.ipv4.conf.{intf.name}.rp_filter=0")
+
         net["host0"].run_many(
+            f"sysctl -w net.ipv4.conf.all.rp_filter=2",
             f"ip route add default via {net_host.gateway}",
             # Handle "nodePort" access
             f'iptables -t nat -A PREROUTING -p tcp --dport 30463 -j DNAT --to-destination {net["serv0"].intf().ip}:8000',
