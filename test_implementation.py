@@ -20,7 +20,6 @@ def net():
             f"{net_pub[241]}:80",
             f"{_net['serv0'].intf().ip}:8000",
         )
-        implementation.configure_fwmark_routing(_net, "host0")
         implementation.configure_rp_filter(_net, "host0")
 
         while True:
@@ -34,6 +33,12 @@ def net():
 
         yield _net
 
+@pytest.fixture
+def net_with_routing(net):
+    implementation.configure_source_routing(net, "host0")
+    implementation.configure_fwmark_routing(net, "host0")
+    return net
+
 
 def ipof(hostname, devname):
     def ipof_net(net):
@@ -42,6 +47,7 @@ def ipof(hostname, devname):
                 return intf.ip
         raise KeyError(devname)
 
+    ipof_net.__name__ = f'{devname}@{hostname}'
     return ipof_net
 
 
@@ -53,7 +59,8 @@ def ipof(hostname, devname):
         ("10.94.61.241", 80, True),
     ],
 )
-def test_rp_filter_loose(net, addr, port, expect_success):
+def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
+    net = net_with_routing
     implementation.configure_rp_filter(net, "host0", value=RP_FILTER_LOOSE)
     if callable(addr):
         addr = addr(net)
@@ -78,7 +85,8 @@ def test_rp_filter_loose(net, addr, port, expect_success):
         ("10.94.61.241", 80, False),
     ],
 )
-def test_rp_filter_strict(net, addr, port, expect_success):
+def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
+    net = net_with_routing
     implementation.configure_rp_filter(net, "host0", value=RP_FILTER_STRICT)
     if callable(addr):
         addr = addr(net)

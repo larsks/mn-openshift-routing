@@ -53,6 +53,7 @@ def configure_basic_routes(net):
 
     net["host0"].run_many(
         f"ip route add default via {net_host.gateway}",
+        f"ip route add table 200 default via {net_pub.gateway}",
     )
 
 
@@ -84,6 +85,15 @@ def configure_nat(net, hostname, nodeport, pub_addr, serv_addr):
     )
 
 
+def configure_source_routing(net, hostname):
+    host = net[hostname]
+
+    host.run_many(
+        f"ip rule add priority 200 from {net_pub} lookup main suppress_prefixlen 0",
+        f"ip rule add priority 210 from {net_pub} lookup 200",
+    )
+
+
 def configure_fwmark_routing(net, hostname):
     nft_rules = f"""
     table ip public-ingress {{
@@ -102,10 +112,7 @@ def configure_fwmark_routing(net, hostname):
     host = net[hostname]
 
     host.run_many(
-        f"ip rule add priority 200 from {net_pub} lookup main suppress_prefixlen 0",
-        f"ip rule add priority 210 from {net_pub} lookup 200",
         f"ip rule add priority 220 fwmark 0x2000/0x2000 lookup 200",
-        f"ip route add table 200 default via {net_pub.gateway}",
     )
 
     host.run("nft -f-", input=nft_rules.encode())
@@ -124,6 +131,7 @@ if __name__ == "__main__":
             f"{net_pub[241]}:80",
             f"{net['serv0'].intf().ip}:8000",
         )
+        configure_source_routing(net, "host0")
         configure_fwmark_routing(net, "host0")
 
         CLI(net)
