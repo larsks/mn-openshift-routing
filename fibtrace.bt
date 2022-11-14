@@ -1,0 +1,38 @@
+kprobe:fib_validate_source {
+    $skb = (struct sk_buff*) arg0;
+    @dev[tid] = (struct net_device*) arg5;
+    @skb[tid] = $skb;
+    @ipheader[tid] = ((struct iphdr *) ($skb->head + $skb->network_header));
+
+}
+
+kretprobe:fib_validate_source {
+    $skb = @skb[tid];
+    $ipheader = @ipheader[tid];
+    $dev = @dev[tid];
+    $version = $ipheader->version;
+
+    if (
+            (($ipheader->daddr & 0xffff) == 0x1eac) ||
+            (($ipheader->saddr & 0xffff) == 0xe9051eac)
+    ) {
+        printf("prot %d vers %d | %s:%s:%s -> (%d) %s\n",
+            $ipheader->protocol,
+            $version,
+            $dev->name,
+            ntop($ipheader->saddr),
+            ntop($ipheader->daddr),
+            retval,
+            strerror(-retval));
+    }
+
+    delete(@dev[tid]);
+    delete(@ipheader[tid]);
+    delete(@skb[tid]);
+}
+
+END {
+    clear(@ipheader);
+    clear(@skb);
+    clear(@dev);
+}
