@@ -116,6 +116,8 @@ def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
 )
 def test_service_no_policy_routing(net_basic, addr, port, expect_success):
     net = net_basic
+    net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
+
     out, success = try_connect(net, "client", addr, port)
     assert success == expect_success
     if success:
@@ -134,6 +136,8 @@ def test_service_no_policy_routing(net_basic, addr, port, expect_success):
 )
 def test_service_no_fwmark_routing(net_basic, addr, port, expect_success):
     net = net_basic
+    net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
+
     implementation.configure_source_routing(net, "host0")
     out, success = try_connect(net, "client", addr, port)
     assert success == expect_success
