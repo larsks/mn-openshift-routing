@@ -2,7 +2,7 @@ import ipaddress
 
 
 class Network:
-    '''Convenience wrapper for an ipaddress.IPv4Network'''
+    """Convenience wrapper for an ipaddress.IPv4Network"""
 
     def __init__(self, cidr, start=10):
         self.net = ipaddress.IPv4Network(cidr)
@@ -16,7 +16,7 @@ class Network:
         return self.net[n]
 
     def addrs_iter(self):
-        for i in range(self.start, self.net.num_addresses):
+        for i in range(self.start, self.net.num_addresses - 1):
             yield self.net[i]
 
     @property
@@ -25,11 +25,10 @@ class Network:
 
     @property
     def gateway_cidr(self):
-        return f'{self.gateway}/{self.net.prefixlen}'
+        return f"{self.gateway}/{self.net.prefixlen}"
 
     def next(self):
         return next(self.addrs)
 
     def next_cidr(self):
-        return f'{self.next()}/{self.net.prefixlen}'
-
+        return f"{self.next()}/{self.net.prefixlen}"
