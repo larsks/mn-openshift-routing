@@ -68,6 +68,7 @@ def try_connect(net, hostname, addr, port):
     "addr,port,expect_success",
     [
         (ipof("host0", "host0-eth0"), 30463, True),
+        (ipof("host0", "host0-eth0"), 8000, True),
         (ipof("host0", "host0-eth1"), 8000, True),
         (ipof("host0", "host0-eth1"), 30463, True),
         ("10.94.61.241", 80, True),
@@ -87,6 +88,7 @@ def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
     "addr,port,expect_success",
     [
         (ipof("host0", "host0-eth0"), 30463, True),
+        (ipof("host0", "host0-eth0"), 8000, True),
         (ipof("host0", "host0-eth1"), 8000, True),
         (ipof("host0", "host0-eth1"), 30463, False),
         ("10.94.61.241", 80, False),
@@ -106,6 +108,7 @@ def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
     "addr,port,expect_success",
     [
         (ipof("host0", "host0-eth0"), 30463, True),
+        (ipof("host0", "host0-eth0"), 8000, True),
         (ipof("host0", "host0-eth1"), 8000, False),
         (ipof("host0", "host0-eth1"), 30463, False),
         ("10.94.61.241", 80, False),
@@ -123,6 +126,7 @@ def test_service_no_policy_routing(net_basic, addr, port, expect_success):
     "addr,port,expect_success",
     [
         (ipof("host0", "host0-eth0"), 30463, True),
+        (ipof("host0", "host0-eth0"), 8000, True),
         (ipof("host0", "host0-eth1"), 8000, True),
         (ipof("host0", "host0-eth1"), 30463, False),
         ("10.94.61.241", 80, False),
