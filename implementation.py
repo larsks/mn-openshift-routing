@@ -11,6 +11,10 @@ from host import Host
 
 @contextmanager
 def run_network():
+    '''Context manager that on enter builds and starts the simulated network,
+    and on exits takes care of tearing down the network and stopping any
+    associated processes.'''
+
     # Ensure that ip_forward is enabled
     subprocess.check_output("sysctl -w net.ipv4.ip_forward=1", shell=True)
 
@@ -44,6 +48,8 @@ def run_network():
 
 
 def configure_basic_routes(net):
+    '''Add default and destination-based routes to all nodes.'''
+
     net["serv0"].run_many(
         f"ip route add default via {net.topo.net_service.gateway}",
     )
@@ -54,12 +60,15 @@ def configure_basic_routes(net):
 
     net["r_pub"].run_many(
         f'ip route add {net["r_client"].intf().ip} dev r_pub-eth1',
+
+        # We need to explicitly populate the arp neighbor cache for the service
+        # loadbalancer ip (since we don't have metallb sending gratuitous ARPs
+        # for us).
         f'ip neigh add {net.topo.net_pub[241]} lladdr {net["host0"].intfs[1].mac} dev r_pub-eth0',
     )
 
     net["r_client"].run_many(
         f'ip route add {net.topo.net_pub} via {net["r_pub"].intfs[1].ip}',
-        f"iptables -t nat -A POSTROUTING -s {net.topo.net_client} -j MASQUERADE",
     )
 
     net["host0"].run_many(
@@ -69,6 +78,9 @@ def configure_basic_routes(net):
 
 
 def configure_nat(net, hostname, nodeport, pub_addr, serv_addr):
+    '''Set up NAT rules that handle traffic to and from the service
+    loadbalancer and nodeport addresses.'''
+
     host = net[hostname]
 
     pub_ip, pub_port = pub_addr.split(":")
@@ -85,6 +97,9 @@ def configure_nat(net, hostname, nodeport, pub_addr, serv_addr):
 
 
 def configure_source_routing(net, hostname):
+    '''Add route policy to handle return traffic over the public network for
+    services running on the host itself.'''
+
     host = net[hostname]
 
     host.run_many(
@@ -94,6 +109,9 @@ def configure_source_routing(net, hostname):
 
 
 def configure_fwmark_routing(net, hostname):
+    '''Add netfilter and routing configuration to handle return traffic over
+    the public network for the service loadbalancer ip.'''
+
     nft_rules = f"""
     table ip public-ingress {{
         chain PREROUTING {{
