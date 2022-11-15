@@ -23,7 +23,13 @@ def run_network():
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             cwd="./htdocs",
-        )
+        ),
+        net["host0"].popen(
+            "python -m http.server",
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd="./htdocs",
+        ),
     ]
 
     yield net
