@@ -108,3 +108,15 @@ This is particularly useful when you want to run `tcpdump` while executing thing
 ```
 ./runin.sh host0 tcpdump -nn -i any
 ```
+
+## Verification
+
+The file `test_implementation.py` contains a series of tests for verifying the behavior of the simulated network. You will need to install [`pytest`][pytest] in order to run the tests, then you can the test suite like this:
+
+```
+sudo pytest -v
+```
+
+The tests have descriptive docstrings, so `pydoc test_implementation` may be of interest.
+
+[pytest]: https://docs.pytest.org/en/7.1.x/how-to/failures.html
