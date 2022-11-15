@@ -9,6 +9,8 @@ from host import Host, CalledProcessError
 
 @pytest.fixture
 def net_basic():
+    '''Network without out any policy routing configuration'''
+
     with implementation.run_network() as net:
         implementation.configure_basic_routes(net)
         implementation.configure_nat(
@@ -33,6 +35,8 @@ def net_basic():
 
 @pytest.fixture
 def net_with_routing(net_basic):
+    '''Network with all policy routing rules configured'''
+
     net = net_basic
     implementation.configure_source_routing(net, "host0")
     implementation.configure_fwmark_routing(net, "host0")
@@ -40,6 +44,9 @@ def net_with_routing(net_basic):
 
 
 def ipof(hostname, devname):
+    '''Utility function allows test parameters to refer to a host address
+    that will only be known at runtime'''
+
     def ipof_net(net):
         for intf in net[hostname].intfs.values():
             if intf.name == devname:
@@ -51,6 +58,10 @@ def ipof(hostname, devname):
 
 
 def try_connect(net, hostname, addr, port):
+    '''Attempt to connect with curl from host hostname to the given
+    address and port'''
+
+    # Resolve address if was specified using ipof()
     if callable(addr):
         addr = addr(net)
 
@@ -75,6 +86,12 @@ def try_connect(net, hostname, addr, port):
     ],
 )
 def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
+    '''With rp_filter in loose mode and all the routing rules in place, the
+    client should be able to access the service on serv0 via the public ip, the
+    nodeport on the host public ip, and the nodeport on the host internal ip.
+    We should also be able to reach a service running on the host at either
+    the public or the internal address.'''
+
     net = net_with_routing
     net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
 
@@ -95,6 +112,11 @@ def test_rp_filter_loose(net_with_routing, addr, port, expect_success):
     ],
 )
 def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
+    '''With rp_filter in strict mode and all the routing rules in place,
+    we should only be able to reach the service via the nodeport of the host
+    internal address. We should also be able to reach a service running
+    on the host at either the public or the internal address.'''
+
     net = net_with_routing
     net["host0"].setRpFilter(Host.RP_FILTER_STRICT)
 
@@ -115,6 +137,8 @@ def test_rp_filter_strict(net_with_routing, addr, port, expect_success):
     ],
 )
 def test_service_no_policy_routing(net_basic, addr, port, expect_success):
+    '''With rp_filter in loose mode and no policy routing rules configured, we
+    should only be able to access services via the host internal address.'''
     net = net_basic
     net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
 
@@ -135,6 +159,10 @@ def test_service_no_policy_routing(net_basic, addr, port, expect_success):
     ],
 )
 def test_service_no_fwmark_routing(net_basic, addr, port, expect_success):
+    '''With rp_filter in loose mode and only source routing configured, we
+    should be able to access all services via the host internal address and
+    only locally hosted services via the public network.'''
+
     net = net_basic
     net["host0"].setRpFilter(Host.RP_FILTER_LOOSE)
 
